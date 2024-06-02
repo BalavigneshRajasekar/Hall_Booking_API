@@ -12,6 +12,13 @@ app.use(bodyParser.json());
 
 app.use("/Rooms", router);
 
+/* 
+
+https://documenter.getpostman.com/view/35282596/2sA3Qwc9uM   
+
+
+*/
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
