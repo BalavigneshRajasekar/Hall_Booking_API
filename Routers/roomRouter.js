@@ -1,5 +1,5 @@
 const express = require("express");
-const Room = require("../model/rooms");
+
 const router = express.Router();
 
 //creating variables for storing data

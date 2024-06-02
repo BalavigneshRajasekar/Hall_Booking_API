@@ -12,9 +12,6 @@ app.use(bodyParser.json());
 
 app.use("/Rooms", router);
 
-mongoose.connect("mongodb://localhost:27017/Hotel_DB").then(() => {
-  console.log("Connected to DB");
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
