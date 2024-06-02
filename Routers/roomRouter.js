@@ -91,6 +91,35 @@ router.post("/bookRoom/:id", (req, res) => {
           status: "booked",
         };
         bookings.push(newBooking);
+        //Once The date verification is passed ,
+        // here we check that is new or existing customer in order to add those booking details in their DB
+        let addCustomer = customers.find(
+          (cus) => cus.name == userInputs.customer
+        );
+        //This flow help us to Book for new Customer
+        if (addCustomer == undefined) {
+          let newCustomer = {
+            name: userInputs.customer,
+            bookings: [newBooking],
+          };
+          customers.push(newCustomer);
+          res
+            .status(200)
+            .send({ message: "new Customer booked room", data: newCustomer });
+          console.log(customers);
+          console.log(bookings);
+          console.log(rooms);
+        } //This flow help us to book existing customer
+        else {
+          addCustomer.bookings.push(newBooking);
+          res.status(200).send({
+            message: "Existing customer booked room",
+            data: newBooking,
+          });
+          console.log(customers);
+          console.log(bookings);
+          console.log(rooms);
+        }
         res.status(200).send({ message: "roomBooked", data: newBooking });
         console.log(bookings);
       } else {
@@ -98,7 +127,9 @@ router.post("/bookRoom/:id", (req, res) => {
           .status(400)
           .json({ message: "Room is already booked on this date" });
       }
-    } else {
+    }
+    //This flow help to book a room which doesn't has any previous booking
+    else {
       let bookID = `B${bookings.length + 1}`;
       let newBooking = {
         ...userInputs,
@@ -109,9 +140,9 @@ router.post("/bookRoom/:id", (req, res) => {
       };
       bookings.push(newBooking);
       let addCustomer = customers.find(
-        (cus) => cus.name == userInputs.customerName
+        (cus) => cus.name == userInputs.customer
       );
-
+      //This help us to add the booking details to the particular user data based on Name
       if (addCustomer) {
         addCustomer.bookings.push(newBooking);
         res.status(200).send({
@@ -120,7 +151,7 @@ router.post("/bookRoom/:id", (req, res) => {
         });
       } else {
         let newCustomer = {
-          name: userInputs.customerName,
+          name: userInputs.customer,
           bookings: [newBooking],
         };
         customers.push(newCustomer);
@@ -163,4 +194,55 @@ router.get("/viewBookings", (req, res) => {
   }
 });
 
+router.get("/viewCustomers", (req, res) => {
+  const customerBookings = customers.map((bookings) => {
+    return bookings.bookings;
+  });
+
+  const allCustomerDetails = customerBookings.map((booking) => {
+    return booking.map((details) => {
+      const { customer, roomId, bookingDate, startTime, endTime } = details;
+      return { customer, roomId, bookingDate, startTime, endTime };
+    });
+  });
+  console.log(customerBookings);
+  console.log(allCustomerDetails);
+  res
+    .status(200)
+    .send({ message: "customers retrived", data: allCustomerDetails });
+});
+
+//This endpoint help us to get the Booking details of the customer by name
+//It will show many times the customer booked the room
+router.get("/customer/:name", (req, res) => {
+  const { name } = req.params;
+  const customer = customers.find((cust) => cust.name === name);
+  if (!customer) {
+    res.status(404).json({ error: "Customer not found" });
+    return;
+  }
+  const customerBookings = customer.bookings.map((booking) => {
+    const {
+      customer,
+      roomId,
+      startTime,
+      endTime,
+      bookingID,
+      status,
+      bookingDate,
+      booked_On,
+    } = booking;
+    return {
+      customer,
+      roomId,
+      startTime,
+      endTime,
+      bookingID,
+      status,
+      bookingDate,
+      booked_On,
+    };
+  });
+  res.json(customerBookings);
+});
 module.exports = router;
